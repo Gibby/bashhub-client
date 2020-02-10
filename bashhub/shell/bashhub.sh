@@ -39,7 +39,7 @@ __bh_hook_bashhub() {
 
     if [ -t 1 ]; then
         # Alias to bind Ctrl + B
-        bind '"\C-b":"\C-u\C-kbh -i\n"'
+        bind '"\C-f":"\C-u\C-kbh -i\n"'
     fi
 
     # Hook into preexec and precmd functions
@@ -54,17 +54,23 @@ __bh_hook_bashhub() {
     fi
 }
 
+_bh_inject() {
+  perl -e 'ioctl(STDIN, 0x5412, $_) for split "", join " ", @ARGV' "$@"
+}
+
 __bh_bash_precmd() {
     if [[ -e $BH_HOME_DIRECTORY/response.bh ]]; then
         local command=$(head -n 1 "$BH_HOME_DIRECTORY/response.bh")
-        rm "$BH_HOME_DIRECTORY/response.bh"
-        history -s "$command"
+        #rm "$BH_HOME_DIRECTORY/response.bh"
+        #history -s "$command"
         # Save that we're executing this command again by calling bashhub's
         # preexec and precmd functions
         __bh_preexec "$command"
-        echo "$command"
-        eval "$command"
+        #echo "$command"
+        #eval "$command"
         __bh_precmd
+        _bh_inject "$command"
+        rm "$BH_HOME_DIRECTORY/response.bh"
      fi;
 }
 
